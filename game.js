@@ -42,7 +42,7 @@
 	}
 
 	game = (function () {
-		var pieces, rotation = 0;
+		var pieces, pieceSize = 32, rotation = 0;
 		pieces = [
 			// Reverse L-piece
 			['010010110', '000100111', '110100100', '000111001'],
@@ -50,34 +50,26 @@
 			// L-piece
 			['010010011', '000111100', '011001001', '000001111'],
 
-			// z-piece
+			// Z-piece
 			['000110011', '010110100', '000110011', '010110100'],
 
-			// reverse z-piece
+			// Reverse Z-piece
 			['000011110', '100110010', '000011110', '100110010'],
 
-			// t-piece
+			// T-piece
 			['000010111', '100110100', '000111010', '010110010'],
 
-			// line piece
+			// Line piece
 			['0100010001000100', '0000111100000000', '0100010001000100', '0000111100000000']
 		];
 
 		function renderPiece(ctx, piece, x, y) {
-			var w, h, n, j, size = 32;
-			if (piece.length === 9) { // 3x3
-				w = 3;
-				h = 3;
-			} else if (piece.length === 16) { // 4x4
-				w = 4;
-				h = 4;
-			}
+			var n, j, size = (piece.length === 9) && 3 || 4;
 
-
-			for (n = 0;n < h; n += 1) {
-				for (j = 0;j < w; j += 1) {
-					if (piece[n * w + j] === '1') {
-						ctx.fillRect(x + j * size, y + n * size, size, size);
+			for (n = 0;n < size; n += 1) {
+				for (j = 0;j < size; j += 1) {
+					if (piece[n * size + j] === '1') {
+						ctx.fillRect(x + j * pieceSize, y + n * pieceSize, pieceSize, pieceSize);
 					}
 				}
 			}
