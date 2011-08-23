@@ -54,6 +54,39 @@
 			}
 		}
 
+		function fitPiece(piece) {
+			var x, y, p;
+			p = piece[piece.rotation];
+
+			/* Step one: move as needed */
+			for (y = 0;y < piece.squareSize;y += 1) {
+				for (x = 0;x < piece.squareSize;x += 1) {
+					if (+p[y * piece.squareSize + x] !== 1) {
+						continue;
+					}
+
+					while (piece.x + x >= grid.width) {
+						piece.x -= 1;
+					}
+
+					while (piece.x + x < 0) {
+						piece.x += 1;
+					}
+				}
+			}
+
+			/* Step two: detect if move was successful */
+			for (y = 0;y < p.squareSize;y += 1) {
+				for (x = 0;x < p.squareSize;x += 1) {
+					if ((piece.x + x >= grid.width) || (piece.x + x < 0)) {
+						return false;
+					}
+				}
+			}
+			
+			return true;
+		}
+
 		function getRandomPiece() {
 			var piece = pieces[Math.floor(Math.random() * pieces.length)];
 			piece.rotation = 0;
@@ -100,6 +133,7 @@
 		grid.y = 50;
 
 		currentPiece = getRandomPiece();
+		fitPiece(currentPiece);
 
 		return ({
 			update: function (delta) {
