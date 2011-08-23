@@ -72,6 +72,10 @@
 					while (piece.x + x < 0) {
 						piece.x += 1;
 					}
+
+					while (piece.y + y < 0) {
+						piece.y += 1;
+					}
 				}
 			}
 
@@ -91,7 +95,7 @@
 			var piece = pieces[Math.floor(Math.random() * pieces.length)];
 			piece.rotation = 0;
 			piece.x = Math.floor(Math.random() * grid.width);
-			piece.y = 0;
+			piece.y = -1;
 			piece.squareSize = (piece[0].length === 9) && 3 || 4;
 
 			return piece;
