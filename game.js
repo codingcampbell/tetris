@@ -12,6 +12,10 @@
 		return canvas.getContext('2d');
 	}
 
+	function rand(min, max) {
+		return min + Math.floor(Math.random() * max - min);
+	}
+
 	repaint = window.requestAnimationFrame ||
 		window.webkitRequestAnimationFrame ||
  		window.mozRequestAnimationFrame ||
@@ -94,7 +98,7 @@
 		function getRandomPiece() {
 			var piece = pieces[Math.floor(Math.random() * pieces.length)];
 			piece.rotation = 0;
-			piece.x = Math.floor(Math.random() * grid.width);
+			piece.x = rand(-1, grid.width);
 			piece.y = -1;
 			piece.squareSize = (piece[0].length === 9) && 3 || 4;
 
