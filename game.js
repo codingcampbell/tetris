@@ -1,5 +1,5 @@
 (function () {
-	var width, height, repaint, context, lastUpdate, game;
+	var width = 400, height = 600, repaint, context, lastUpdate, game;
 
 	function createCanvas(width, height, node) {
 		var canvas = document.createElement('canvas');
@@ -34,15 +34,13 @@
 	}
 
 	function init() {
-		width = 800;
-		height = 600;
 		context = createCanvas(width, height, document.body);
 		lastUpdate = Date.now();
 		repaint(update);
 	}
 
 	game = (function () {
-		var pieces, pieceSize = 32, rotation = 0;
+		var pieces, pieceSize = 16, grid = [];
 		pieces = [
 			// Reverse L-piece
 			['010010110', '000100111', '110100100', '000111001'],
@@ -63,6 +61,11 @@
 			['0100010001000100', '0000111100000000', '0100010001000100', '0000111100000000']
 		];
 
+		grid.width = 16;
+		grid.height = 32;
+		grid.x = (width / 2) - (grid.width * pieceSize / 2);
+		grid.y = 50;
+
 		function renderPiece(ctx, piece, x, y) {
 			var n, j, size = (piece.length === 9) && 3 || 4;
 
@@ -77,17 +80,19 @@
 
 		return ({
 			update: function (delta) {
-				rotation = (rotation + delta * .0025) % 4;
 			},
 
 			render: function (ctx) {
 				ctx.clearStyle = '#fff';
 				ctx.clearRect(0, 0, width, height);
 
+				ctx.fillStyle = '#f00';
 				pieces.forEach(function (piece, index) {
-					ctx.fillStyle = '#f00';
-					renderPiece(ctx, piece[Math.floor(rotation)], index * 128, 100);
+					renderPiece(ctx, piece[0], index * 128, 100);
 				});
+
+				ctx.strokeStyle = '#00f';
+				ctx.strokeRect(grid.x, grid.y, grid.width * pieceSize, grid.height * pieceSize);
 			}
 		});
 	}());
