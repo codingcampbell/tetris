@@ -43,11 +43,11 @@
 		var pieces, pieceSize = 16, grid, currentPiece;
 
 		function renderPiece(ctx, piece, x, y) {
-			var n, j, size = (piece.length === 9) && 3 || 4;
+			var n, j; 
 
-			for (n = 0;n < size; n += 1) {
-				for (j = 0;j < size; j += 1) {
-					if (piece[n * size + j] === '1') {
+			for (n = 0;n < piece.squareSize; n += 1) {
+				for (j = 0;j < piece.squareSize; j += 1) {
+					if (piece[piece.rotation][n * piece.squareSize + j] === '1') {
 						ctx.fillRect(x + j * pieceSize, y + n * pieceSize, pieceSize, pieceSize);
 					}
 				}
@@ -59,6 +59,7 @@
 			piece.rotation = 0;
 			piece.x = Math.floor(Math.random() * grid.width);
 			piece.y = 0;
+			piece.squareSize = (piece[0].length === 9) && 3 || 4;
 
 			return piece;
 		}
@@ -102,6 +103,7 @@
 
 		return ({
 			update: function (delta) {
+				
 			},
 
 			render: function (ctx) {
@@ -116,11 +118,18 @@
 						ctx.fillRect(
 							grid.x + (index % grid.width) * pieceSize,
 							grid.y + Math.floor(index / grid.width) * pieceSize,
-							pieceSize,
-							pieceSize
+							pieceSize, pieceSize
 						);
 					}
 				});
+
+				/* Current piece */
+				ctx.fillStyle = '#f00';
+				renderPiece(
+					ctx, currentPiece,
+					grid.x + currentPiece.x * pieceSize,
+					grid.y + currentPiece.y * pieceSize
+				);
 
 				/* Grid outline */
 				ctx.strokeStyle = '#00f';
