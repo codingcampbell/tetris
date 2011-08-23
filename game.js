@@ -5,8 +5,20 @@
 		var canvas = document.createElement('canvas');
 		canvas.width = width;
 		canvas.height = height;
+
 		if (node) {
 			node.appendChild(canvas);
+			canvas.tabIndex = 0;
+			canvas.addEventListener('keydown', function (e) {
+				game.keyPressed(e.keyCode);
+				e.preventDefault();
+				return (e.keyCode < 37 && e.keyCode > 40) && e.keyCode != 32;
+			});
+			canvas.addEventListener('keyup', function (e) {
+				game.keyReleased(e.keyCode);
+				e.preventDefault();
+				return (e.keyCode < 37 && e.keyCode > 40) && e.keyCode != 32;
+			});
 		}
 
 		return canvas.getContext('2d');
@@ -44,7 +56,13 @@
 	}
 
 	game = (function () {
-		var pieces, pieceSize = 16, grid, currentPiece, dropTimer = 0;
+		var pieces, pieceSize = 16, grid, currentPiece, timers, keys = [];
+
+		keys.SPACE = 32;
+		keys.LEFT_ARROW = 37;
+		keys.UP_ARROW = 38;
+		keys.RIGHT_ARROW = 39;
+		keys.DOWN_ARROW = 40;
 
 		function renderPiece(ctx, piece, x, y) {
 			var n, j; 
@@ -143,11 +161,46 @@
 		currentPiece = getRandomPiece();
 		fitPiece(currentPiece);
 
+		timers = {
+			move: 0,
+			drop: 0
+		};
+
 		return ({
+			keyPressed: function (code) {
+				keys[code] = 1;
+			},
+
+			keyReleased: function (code) {
+				keys[code] = 0;
+			},
+
 			update: function (delta) {
-				dropTimer += delta;
-				while (dropTimer >= 1000) {
-					dropTimer -= 1000;
+				timers.drop += delta;
+				timers.move += delta;
+
+				while (timers.move >= 100) {
+					timers.move -= 100;
+					if (keys[keys.LEFT_ARROW]) {
+						currentPiece.x -= 1;
+						keys[keys.LEFT_ARROW] = 0;
+					}
+
+					if (keys[keys.RIGHT_ARROW]) {
+						currentPiece.x += 1;
+						keys[keys.RIGHT_ARROW] = 0;
+					}
+
+					if (keys[keys.SPACE] || keys[keys.UP_ARROW]) {
+						currentPiece.rotation = (currentPiece.rotation + 1) % 4;
+						keys[keys.SPACE] = keys[keys.UP_ARROW] = 0;
+					}
+
+					fitPiece(currentPiece);
+				}
+
+				while (timers.drop >= 1000) {
+					timers.drop -= 1000;
 					currentPiece.y += 1;
 				}
 			},
