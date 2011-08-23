@@ -40,7 +40,29 @@
 	}
 
 	game = (function () {
-		var pieces, pieceSize = 16, grid = [];
+		var pieces, pieceSize = 16, grid, currentPiece;
+
+		function renderPiece(ctx, piece, x, y) {
+			var n, j, size = (piece.length === 9) && 3 || 4;
+
+			for (n = 0;n < size; n += 1) {
+				for (j = 0;j < size; j += 1) {
+					if (piece[n * size + j] === '1') {
+						ctx.fillRect(x + j * pieceSize, y + n * pieceSize, pieceSize, pieceSize);
+					}
+				}
+			}
+		}
+
+		function getRandomPiece() {
+			var piece = pieces[Math.floor(Math.random() * pieces.length)];
+			piece.rotation = 0;
+			piece.x = Math.floor(Math.random() * grid.width);
+			piece.y = 0;
+
+			return piece;
+		}
+
 		pieces = [
 			// Reverse L-piece
 			['010010110', '000100111', '110100100', '000111001'],
@@ -61,36 +83,46 @@
 			['0100010001000100', '0000111100000000', '0100010001000100', '0000111100000000']
 		];
 
-		grid.width = 16;
-		grid.height = 32;
+		grid = (function () {
+			var j, grid = [];
+			grid.width = 16;
+			grid.height = 32;
+
+			for (j = 0;j < grid.width * grid.height;j += 1) {
+				grid.push(0);
+			}
+
+			return grid;
+		}());
+
 		grid.x = (width / 2) - (grid.width * pieceSize / 2);
 		grid.y = 50;
 
-		function renderPiece(ctx, piece, x, y) {
-			var n, j, size = (piece.length === 9) && 3 || 4;
-
-			for (n = 0;n < size; n += 1) {
-				for (j = 0;j < size; j += 1) {
-					if (piece[n * size + j] === '1') {
-						ctx.fillRect(x + j * pieceSize, y + n * pieceSize, pieceSize, pieceSize);
-					}
-				}
-			}
-		}
+		currentPiece = getRandomPiece();
 
 		return ({
 			update: function (delta) {
 			},
 
 			render: function (ctx) {
+				/* Clear screen */
 				ctx.clearStyle = '#fff';
 				ctx.clearRect(0, 0, width, height);
 
-				ctx.fillStyle = '#f00';
-				pieces.forEach(function (piece, index) {
-					renderPiece(ctx, piece[0], index * 128, 100);
+				/* Grid content */
+				ctx.fillStyle = '#0f0';
+				grid.forEach(function (cell, index) {
+					if (cell === 1) {
+						ctx.fillRect(
+							grid.x + (index % grid.width) * pieceSize,
+							grid.y + Math.floor(index / grid.width) * pieceSize,
+							pieceSize,
+							pieceSize
+						);
+					}
 				});
 
+				/* Grid outline */
 				ctx.strokeStyle = '#00f';
 				ctx.strokeRect(grid.x, grid.y, grid.width * pieceSize, grid.height * pieceSize);
 			}
