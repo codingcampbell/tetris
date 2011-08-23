@@ -83,6 +83,8 @@
 			/* Step one: move as needed */
 			for (y = 0;y < piece.squareSize;y += 1) {
 				for (x = 0;x < piece.squareSize;x += 1) {
+
+					/* Ignore white space */
 					if (+p[y * piece.squareSize + x] !== 1) {
 						continue;
 					}
@@ -102,14 +104,67 @@
 			}
 
 			/* Step two: detect if move was successful */
-			for (y = 0;y < p.squareSize;y += 1) {
-				for (x = 0;x < p.squareSize;x += 1) {
+			return validatePieceLocation(piece);
+		}
+
+		function validatePieceLocation(piece) {
+			var x, y, p;
+			p = piece[piece.rotation];
+			for (y = 0;y < piece.squareSize;y += 1) {
+				for (x = 0;x < piece.squareSize;x += 1) {
+
+					/* Ignore white space */
+					if (+p[y * piece.squareSize + x] !== 1) {
+						continue;
+					}
+
+					/* Location is invalid if it is outside the grid */
 					if ((piece.x + x >= grid.width) || (piece.x + x < 0)) {
+						return false;
+					}
+
+					if ((piece.y + y >= grid.height) || (piece.y + y < 0)) {
+						return false;
+					}
+
+					/* Location is invalid if it is on top of an existing piece */
+					if (+grid[(piece.y + y) * grid.width + piece.x + x] === 1) {
 						return false;
 					}
 				}
 			}
 			
+			return true;
+		}
+
+		function placePiece(piece) {
+			var x, y, p;
+			p = piece[piece.rotation];
+
+			/* Step one: move as needed */
+			for (y = 0;y < piece.squareSize;y += 1) {
+				for (x = 0;x < piece.squareSize;x += 1) {
+
+					/* Ignore white space */
+					if (+p[y * piece.squareSize + x] !== 1) {
+						continue;
+					}
+
+					grid[(piece.y + y) * grid.width + piece.x + x] = 1;
+				}
+			}
+		}
+
+		function dropFast(piece) {
+			if (!validatePieceLocation(piece)) {
+				return false;
+			}
+
+			while (validatePieceLocation(piece)) {
+				piece.y += 1;
+			}
+
+			piece.y -= 1;
 			return true;
 		}
 
@@ -119,6 +174,7 @@
 			piece.x = rand(-1, grid.width);
 			piece.y = -1;
 			piece.squareSize = (piece[0].length === 9) && 3 || 4;
+			fitPiece(piece);
 
 			return piece;
 		}
@@ -159,7 +215,6 @@
 		grid.y = 50;
 
 		currentPiece = getRandomPiece();
-		fitPiece(currentPiece);
 
 		timers = {
 			move: 0,
@@ -191,9 +246,21 @@
 						keys[keys.RIGHT_ARROW] = 0;
 					}
 
-					if (keys[keys.SPACE] || keys[keys.UP_ARROW]) {
+					if (keys[keys.UP_ARROW]) {
 						currentPiece.rotation = (currentPiece.rotation + 1) % 4;
-						keys[keys.SPACE] = keys[keys.UP_ARROW] = 0;
+						keys[keys.UP_ARROW] = 0;
+					}
+
+					if (keys[keys.DOWN_ARROW]) {
+						timers.drop += 1000;
+						keys[keys.DOWN_ARROW] = 0;
+					}
+					
+					if (keys[keys.SPACE]) {
+						keys[keys.SPACE] = 0;
+						dropFast(currentPiece);
+						placePiece(currentPiece);
+						currentPiece = getRandomPiece();
 					}
 
 					fitPiece(currentPiece);
@@ -202,6 +269,12 @@
 				while (timers.drop >= 1000) {
 					timers.drop -= 1000;
 					currentPiece.y += 1;
+					if (!validatePieceLocation(currentPiece)) {
+						timers.drop = 0;
+						currentPiece.y -= 1;
+						placePiece(currentPiece);
+						currentPiece = getRandomPiece();
+					}
 				}
 			},
 
