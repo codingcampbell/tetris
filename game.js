@@ -44,7 +44,7 @@
 	}
 
 	game = (function () {
-		var pieces, pieceSize = 16, grid, currentPiece;
+		var pieces, pieceSize = 16, grid, currentPiece, dropTimer = 0;
 
 		function renderPiece(ctx, piece, x, y) {
 			var n, j; 
@@ -145,7 +145,11 @@
 
 		return ({
 			update: function (delta) {
-				
+				dropTimer += delta;
+				while (dropTimer >= 1000) {
+					dropTimer -= 1000;
+					currentPiece.y += 1;
+				}
 			},
 
 			render: function (ctx) {
