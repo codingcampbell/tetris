@@ -274,12 +274,22 @@
 				while (timers.move >= 100) {
 					timers.move -= 100;
 					oldPiece = copyPiece(currentPiece);
-					if (keys[keys.LEFT_ARROW] === 1) {
-						currentPiece.x -= 1;
+					if (keys[keys.LEFT_ARROW] > 0) {
+						/* Delay movement for one cycle */
+						if (keys[keys.LEFT_ARROW] === 1 || keys[keys.LEFT_ARROW] > 2) {
+							currentPiece.x -= 1;
+						}
+
+						keys[keys.LEFT_ARROW] += 1;
 					}
 
-					if (keys[keys.RIGHT_ARROW] === 1) {
-						currentPiece.x += 1;
+					if (keys[keys.RIGHT_ARROW] > 0) {
+						/* Delay movement for one cycle */
+						if (keys[keys.RIGHT_ARROW] === 1 || keys[keys.RIGHT_ARROW] > 2) {
+							currentPiece.x += 1;
+						}
+
+						keys[keys.RIGHT_ARROW] += 1;
 					}
 
 					if (keys[keys.UP_ARROW] === 1) {
