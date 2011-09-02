@@ -247,7 +247,10 @@
 
 		return ({
 			keyPressed: function (code) {
-				keys[code] = 1;
+				/* -1 means user must release key before pressing it */
+				if (keys[code] !== -1) {
+					keys[code] = 1;
+				}
 			},
 
 			keyReleased: function (code) {
@@ -262,28 +265,24 @@
 				while (timers.move >= 100) {
 					timers.move -= 100;
 					oldPiece = copyPiece(currentPiece);
-					if (keys[keys.LEFT_ARROW]) {
+					if (keys[keys.LEFT_ARROW] === 1) {
 						currentPiece.x -= 1;
-						keys[keys.LEFT_ARROW] = 0;
 					}
 
-					if (keys[keys.RIGHT_ARROW]) {
+					if (keys[keys.RIGHT_ARROW] === 1) {
 						currentPiece.x += 1;
-						keys[keys.RIGHT_ARROW] = 0;
 					}
 
-					if (keys[keys.UP_ARROW]) {
+					if (keys[keys.UP_ARROW] === 1) {
 						currentPiece.rotation = (currentPiece.rotation + 1) % 4;
-						keys[keys.UP_ARROW] = 0;
 					}
 
-					if (keys[keys.DOWN_ARROW]) {
+					if (keys[keys.DOWN_ARROW] === 1) {
 						timers.drop += 1000;
-						keys[keys.DOWN_ARROW] = 0;
 					}
 					
-					if (keys[keys.SPACE]) {
-						keys[keys.SPACE] = 0;
+					if (keys[keys.SPACE] === 1) {
+						keys[keys.SPACE] = -1;
 						dropFast(currentPiece);
 						placePiece(currentPiece);
 						currentPiece = getRandomPiece();
