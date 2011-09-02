@@ -252,11 +252,13 @@
 			},
 
 			update: function (delta) {
+				var oldPiece;
 				timers.drop += delta;
 				timers.move += delta;
 
 				while (timers.move >= 100) {
 					timers.move -= 100;
+					oldPiece = copyPiece(currentPiece);
 					if (keys[keys.LEFT_ARROW]) {
 						currentPiece.x -= 1;
 						keys[keys.LEFT_ARROW] = 0;
@@ -284,8 +286,12 @@
 						currentPiece = getRandomPiece();
 					}
 
-					fitPiece(currentPiece);
-					ghostPiece = getGhostPiece(currentPiece);
+					if (fitPiece(currentPiece)) {
+						ghostPiece = getGhostPiece(currentPiece);
+					} else {
+						/* Revert invalid movement */
+						currentPiece = copyPiece(oldPiece);
+					}
 				}
 
 				while (timers.drop >= 1000) {
@@ -319,12 +325,14 @@
 				});
 
 				/* Ghost piece */
-				ctx.fillStyle = '#0ff';
-				renderPiece(
-					ctx, ghostPiece,
-					grid.x + ghostPiece.x * pieceSize,
-					grid.y + ghostPiece.y * pieceSize
-				);
+				if (ghostPiece) {
+					ctx.fillStyle = '#0ff';
+					renderPiece(
+						ctx, ghostPiece,
+						grid.x + ghostPiece.x * pieceSize,
+						grid.y + ghostPiece.y * pieceSize
+					);
+				}
 
 				/* Current piece */
 				ctx.fillStyle = '#f00';
