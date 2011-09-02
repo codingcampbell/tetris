@@ -10,14 +10,18 @@
 			node.appendChild(canvas);
 			canvas.tabIndex = 0;
 			canvas.addEventListener('keydown', function (e) {
-				game.keyPressed(e.keyCode);
-				e.preventDefault();
-				return (e.keyCode < 37 && e.keyCode > 40) && e.keyCode != 32;
+				if (game.captureKey(e.keyCode)) {
+					game.keyPressed(e.keyCode);
+					e.preventDefault();
+					return false;
+				}
 			});
 			canvas.addEventListener('keyup', function (e) {
-				game.keyReleased(e.keyCode);
-				e.preventDefault();
-				return (e.keyCode < 37 && e.keyCode > 40) && e.keyCode != 32;
+				if (game.captureKey(e.keyCode)) {
+					game.keyReleased(e.keyCode);
+					e.preventDefault();
+					return false;
+				}
 			});
 		}
 
@@ -246,6 +250,11 @@
 		};
 
 		return ({
+			/* Return true if game should capture the provided key code */
+			captureKey: function (code) {
+				return (code >= 37 && code <= 40) || code === 32;
+			},
+
 			keyPressed: function (code) {
 				/* -1 means user must release key before pressing it */
 				if (keys[code] !== -1) {
@@ -275,6 +284,7 @@
 
 					if (keys[keys.UP_ARROW] === 1) {
 						currentPiece.rotation = (currentPiece.rotation + 1) % 4;
+						keys[keys.UP_ARROW] = -1;
 					}
 
 					if (keys[keys.DOWN_ARROW] === 1) {
