@@ -1,4 +1,5 @@
-(function () {
+(function (window, document) {
+	"use strict";
 	var width = 400, height = 600, repaint, context, lastUpdate, game;
 
 	function createCanvas(width, height, node) {
@@ -15,14 +16,14 @@
 					e.preventDefault();
 					return false;
 				}
-			});
+			}, false);
 			canvas.addEventListener('keyup', function (e) {
 				if (game.captureKey(e.keyCode)) {
 					game.keyReleased(e.keyCode);
 					e.preventDefault();
 					return false;
 				}
-			});
+			}, false);
 		}
 
 		return canvas.getContext('2d');
@@ -34,11 +35,11 @@
 
 	repaint = window.requestAnimationFrame ||
 		window.webkitRequestAnimationFrame ||
- 		window.mozRequestAnimationFrame ||
- 		window.oRequestAnimationFrame ||
- 		function (callback) {
- 			window.setTimeout(function () {
- 				callback(Date.now());
+		window.mozRequestAnimationFrame ||
+		window.oRequestAnimationFrame ||
+		function (callback) {
+			window.setTimeout(function () {
+				callback(Date.now());
 			}, 20);
 		};
 
@@ -71,8 +72,8 @@
 		function renderPiece(ctx, piece, x, y) {
 			var n, j; 
 
-			for (n = 0;n < piece.squareSize; n += 1) {
-				for (j = 0;j < piece.squareSize; j += 1) {
+			for (n = 0; n < piece.squareSize; n += 1) {
+				for (j = 0; j < piece.squareSize; j += 1) {
 					if (piece[piece.rotation][n * piece.squareSize + j] === '1') {
 						ctx.fillRect(x + j * pieceSize, y + n * pieceSize, pieceSize, pieceSize);
 					}
@@ -80,29 +81,55 @@
 			}
 		}
 
+		function validatePieceLocation(piece) {
+			var x, y, p;
+			p = piece[piece.rotation];
+			for (y = 0; y < piece.squareSize; y += 1) {
+				for (x = 0; x < piece.squareSize; x += 1) {
+
+					/* Ignore white space */
+					if (+p[y * piece.squareSize + x] === 1) {
+						/* Location is invalid if it is outside the grid */
+						if ((piece.x + x >= grid.width) || (piece.x + x < 0)) {
+							return false;
+						}
+
+						if ((piece.y + y >= grid.height) || (piece.y + y < 0)) {
+							return false;
+						}
+
+						/* Location is invalid if it is on top of an existing piece */
+						if (+grid[(piece.y + y) * grid.width + piece.x + x] === 1) {
+							return false;
+						}
+					}
+				}
+			}
+			
+			return true;
+		}
+
 		function fitPiece(piece) {
 			var x, y, p;
 			p = piece[piece.rotation];
 
 			/* Step one: move as needed */
-			for (y = 0;y < piece.squareSize;y += 1) {
-				for (x = 0;x < piece.squareSize;x += 1) {
+			for (y = 0; y < piece.squareSize; y += 1) {
+				for (x = 0; x < piece.squareSize; x += 1) {
 
 					/* Ignore white space */
-					if (+p[y * piece.squareSize + x] !== 1) {
-						continue;
-					}
+					if (+p[y * piece.squareSize + x] === 1) {
+						while (piece.x + x >= grid.width) {
+							piece.x -= 1;
+						}
 
-					while (piece.x + x >= grid.width) {
-						piece.x -= 1;
-					}
+						while (piece.x + x < 0) {
+							piece.x += 1;
+						}
 
-					while (piece.x + x < 0) {
-						piece.x += 1;
-					}
-
-					while (piece.y + y < 0) {
-						piece.y += 1;
+						while (piece.y + y < 0) {
+							piece.y += 1;
+						}
 					}
 				}
 			}
@@ -111,49 +138,17 @@
 			return validatePieceLocation(piece);
 		}
 
-		function validatePieceLocation(piece) {
-			var x, y, p;
-			p = piece[piece.rotation];
-			for (y = 0;y < piece.squareSize;y += 1) {
-				for (x = 0;x < piece.squareSize;x += 1) {
-
-					/* Ignore white space */
-					if (+p[y * piece.squareSize + x] !== 1) {
-						continue;
-					}
-
-					/* Location is invalid if it is outside the grid */
-					if ((piece.x + x >= grid.width) || (piece.x + x < 0)) {
-						return false;
-					}
-
-					if ((piece.y + y >= grid.height) || (piece.y + y < 0)) {
-						return false;
-					}
-
-					/* Location is invalid if it is on top of an existing piece */
-					if (+grid[(piece.y + y) * grid.width + piece.x + x] === 1) {
-						return false;
-					}
-				}
-			}
-			
-			return true;
-		}
-
 		function placePiece(piece) {
 			var x, y, p;
 			p = piece[piece.rotation];
 
-			for (y = 0;y < piece.squareSize;y += 1) {
-				for (x = 0;x < piece.squareSize;x += 1) {
+			for (y = 0; y < piece.squareSize; y += 1) {
+				for (x = 0; x < piece.squareSize; x += 1) {
 
 					/* Ignore white space */
-					if (+p[y * piece.squareSize + x] !== 1) {
-						continue;
+					if (+p[y * piece.squareSize + x] === 1) {
+						grid[(piece.y + y) * grid.width + piece.x + x] = 1;
 					}
-
-					grid[(piece.y + y) * grid.width + piece.x + x] = 1;
 				}
 			}
 
@@ -198,7 +193,7 @@
 			piece.rotation = 0;
 			piece.x = rand(-1, grid.width);
 			piece.y = -1;
-			piece.squareSize = (piece[0].length === 9) && 3 || 4;
+			piece.squareSize = (piece[0].length === 9 && 3) || 4;
 			fitPiece(piece);
 
 			return piece;
@@ -232,7 +227,7 @@
 			grid.width = 16;
 			grid.height = 32;
 
-			for (j = 0;j < grid.width * grid.height;j += 1) {
+			for (j = 0; j < grid.width * grid.height; j += 1) {
 				grid.push(0);
 			}
 
@@ -275,16 +270,16 @@
 			grid.clearFilledRows = function () {
 				var j, cleared = 0, rows, rowCount;
 				rows = grid.getRows();
-			 	rowCount = grid.countFilledRows(rows);
+				rowCount = grid.countFilledRows(rows);
 
 				while (cleared < rowCount) {
-					for (j = grid.height - 1;j >= 0;j -= 1) {
+					for (j = grid.height - 1; j >= 0; j -= 1) {
 						if (patterns.filledRow.test(rows[j])) {
 							grid.dropRow(j);
 							cleared += 1;
 							break;
 						}
-					};
+					}
 				}
 
 				return rowCount;
@@ -396,7 +391,8 @@
 						ctx.fillRect(
 							grid.x + (index % grid.width) * pieceSize,
 							grid.y + Math.floor(index / grid.width) * pieceSize,
-							pieceSize, pieceSize
+							pieceSize,
+							pieceSize
 						);
 					}
 				});
@@ -405,7 +401,8 @@
 				if (ghostPiece) {
 					ctx.fillStyle = '#0ff';
 					renderPiece(
-						ctx, ghostPiece,
+						ctx,
+						ghostPiece,
 						grid.x + ghostPiece.x * pieceSize,
 						grid.y + ghostPiece.y * pieceSize
 					);
@@ -414,7 +411,8 @@
 				/* Current piece */
 				ctx.fillStyle = '#f00';
 				renderPiece(
-					ctx, currentPiece,
+					ctx,
+					currentPiece,
 					grid.x + currentPiece.x * pieceSize,
 					grid.y + currentPiece.y * pieceSize
 				);
@@ -427,4 +425,4 @@
 	}());
 
 	init();
-}());
+}(this, this.document));
