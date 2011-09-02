@@ -56,7 +56,7 @@
 	}
 
 	game = (function () {
-		var pieces, pieceSize = 16, grid, currentPiece, timers, keys = [];
+		var pieces, pieceSize = 16, grid, currentPiece, ghostPiece, timers, keys = [];
 
 		keys.SPACE = 32;
 		keys.LEFT_ARROW = 37;
@@ -168,6 +168,26 @@
 			return true;
 		}
 
+		function copyPiece(piece) {
+			var copy = [].concat(piece);
+			copy.rotation = piece.rotation;
+			copy.squareSize = piece.squareSize;
+			copy.x = piece.x;
+			copy.y = piece.y;
+
+			return copy;
+		}
+
+		/* Get piece location as if it was hard-dropped */
+		function getGhostPiece(piece) {
+			var copy = copyPiece(piece);
+			if (dropFast(copy)) {
+				return copy;
+			}
+
+			return null;
+		}
+
 		function getRandomPiece() {
 			var piece = pieces[Math.floor(Math.random() * pieces.length)];
 			piece.rotation = 0;
@@ -215,6 +235,7 @@
 		grid.y = 50;
 
 		currentPiece = getRandomPiece();
+		ghostPiece = getGhostPiece(currentPiece);
 
 		timers = {
 			move: 0,
@@ -264,6 +285,7 @@
 					}
 
 					fitPiece(currentPiece);
+					ghostPiece = getGhostPiece(currentPiece);
 				}
 
 				while (timers.drop >= 1000) {
@@ -274,6 +296,7 @@
 						currentPiece.y -= 1;
 						placePiece(currentPiece);
 						currentPiece = getRandomPiece();
+						ghostPiece = getGhostPiece(currentPiece);
 					}
 				}
 			},
@@ -294,6 +317,14 @@
 						);
 					}
 				});
+
+				/* Ghost piece */
+				ctx.fillStyle = '#0ff';
+				renderPiece(
+					ctx, ghostPiece,
+					grid.x + ghostPiece.x * pieceSize,
+					grid.y + ghostPiece.y * pieceSize
+				);
 
 				/* Current piece */
 				ctx.fillStyle = '#f00';
