@@ -145,7 +145,6 @@
 			var x, y, p;
 			p = piece[piece.rotation];
 
-			/* Step one: move as needed */
 			for (y = 0;y < piece.squareSize;y += 1) {
 				for (x = 0;x < piece.squareSize;x += 1) {
 
@@ -157,6 +156,8 @@
 					grid[(piece.y + y) * grid.width + piece.x + x] = 1;
 				}
 			}
+
+			grid.clearFilledRows();
 		}
 
 		function dropFast(piece) {
@@ -227,13 +228,67 @@
 		];
 
 		grid = (function () {
-			var j, grid = [];
+			var j, grid = [], patterns;
 			grid.width = 16;
 			grid.height = 32;
 
 			for (j = 0;j < grid.width * grid.height;j += 1) {
 				grid.push(0);
 			}
+
+			patterns = {
+				row: new RegExp('\\d{' + grid.width + '}', 'g'),
+				filledRow: new RegExp('^1{' + grid.width + '}$')
+			};
+
+			grid.getRows = function () {
+				return grid.join('').match(patterns.row);
+			};
+
+			grid.countFilledRows = function (rows) {
+				if (!rows || !rows.length) {
+					rows = grid.getRows();
+				}
+
+				return (
+					rows.filter(function (row) {
+						return patterns.filledRow.test(row);
+					}).length
+				);
+			};
+
+			grid.dropRow = function (row) {
+				var j, n;
+				for (j = row; j >= 0; j -= 1) {
+					if (j === 0) {
+						for (n = 0; n < grid.width; n += 1) {
+							grid[j * grid.width + n] = 0;
+						}
+					} else {
+						for (n = 0; n < grid.width; n += 1) {
+							grid[j * grid.width + n] = grid[(j - 1) * grid.width + n];
+						}
+					}
+				}
+			};
+
+			grid.clearFilledRows = function () {
+				var j, cleared = 0, rows, rowCount;
+				rows = grid.getRows();
+			 	rowCount = grid.countFilledRows(rows);
+
+				while (cleared < rowCount) {
+					for (j = grid.height - 1;j >= 0;j -= 1) {
+						if (patterns.filledRow.test(rows[j])) {
+							grid.dropRow(j);
+							cleared += 1;
+							break;
+						}
+					};
+				}
+
+				return rowCount;
+			};
 
 			return grid;
 		}());
