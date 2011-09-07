@@ -10,6 +10,7 @@
 		if (node) {
 			node.appendChild(canvas);
 			canvas.tabIndex = 0;
+			canvas.focus();
 			canvas.addEventListener('keydown', function (e) {
 				if (game.captureKey(e.keyCode)) {
 					game.keyPressed(e.keyCode);
@@ -61,7 +62,7 @@
 	}
 
 	game = (function () {
-		var pieces, pieceSize = 16, grid, currentPiece, ghostPiece, timers, keys = [];
+		var pieces, pieceSize = 20, grid, currentPiece, ghostPiece, timers, keys = [];
 
 		keys.SPACE = 32;
 		keys.LEFT_ARROW = 37;
@@ -191,20 +192,23 @@
 		function getRandomPiece() {
 			var piece = pieces[Math.floor(Math.random() * pieces.length)];
 			piece.rotation = 0;
-			piece.x = rand(-1, grid.width);
-			piece.y = -1;
 			piece.squareSize = (piece[0].length === 9 && 3) || 4;
-			fitPiece(piece);
+			piece.x = Math.floor((grid.width / 2) - (piece.squareSize / 2));
+			piece.y = -1;
+
+			if (!fitPiece(piece)) {
+				/* TODO: game over */
+			}
 
 			return piece;
 		}
 
 		pieces = [
 			// Reverse L-piece
-			['010010110', '000100111', '110100100', '000111001'],
+			['000100111', '110100100', '000111001', '010010110'],
 
 			// L-piece
-			['010010011', '000111100', '011001001', '000001111'],
+			['000001111', '010010011', '000111100', '011001001'],
 
 			// Z-piece
 			['000110011', '010110100', '000110011', '010110100'],
@@ -224,8 +228,8 @@
 
 		grid = (function () {
 			var j, grid = [], patterns;
-			grid.width = 16;
-			grid.height = 32;
+			grid.width = 10;
+			grid.height = 20;
 
 			for (j = 0; j < grid.width * grid.height; j += 1) {
 				grid.push(0);
