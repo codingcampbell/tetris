@@ -353,8 +353,7 @@
 					
 					if (keys[keys.SPACE] === 1) {
 						keys[keys.SPACE] = -1;
-						dropFast(currentPiece);
-						placePiece(currentPiece);
+						placePiece(ghostPiece);
 						currentPiece = getRandomPiece();
 					}
 
