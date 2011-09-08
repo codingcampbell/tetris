@@ -227,7 +227,7 @@
 		];
 
 		grid = (function () {
-			var j, grid = [], patterns;
+			var j, grid = [], patterns, emptyRow = '', filledRow = '';
 			grid.width = 10;
 			grid.height = 20;
 
@@ -235,9 +235,14 @@
 				grid.push(0);
 			}
 
+
+			for (j = 0;j < grid.width;j += 1) {
+				emptyRow += '0';
+				filledRow += '1';
+			}
+
 			patterns = {
-				row: new RegExp('\\d{' + grid.width + '}', 'g'),
-				filledRow: new RegExp('^1{' + grid.width + '}$')
+				row: new RegExp('\\d{' + grid.width + '}', 'g')
 			};
 
 			grid.getRows = function () {
@@ -251,39 +256,34 @@
 
 				return (
 					rows.filter(function (row) {
-						return patterns.filledRow.test(row);
+						return row === filledRow;
 					}).length
 				);
 			};
 
-			grid.dropRow = function (row) {
-				var j, n;
-				for (j = row; j >= 0; j -= 1) {
-					if (j === 0) {
-						for (n = 0; n < grid.width; n += 1) {
-							grid[j * grid.width + n] = 0;
-						}
-					} else {
-						for (n = 0; n < grid.width; n += 1) {
-							grid[j * grid.width + n] = grid[(j - 1) * grid.width + n];
-						}
-					}
-				}
-			};
-
 			grid.clearFilledRows = function () {
-				var j, cleared = 0, rows, rowCount;
+				var j, rows, rowCount, newRows;
 				rows = grid.getRows();
 				rowCount = grid.countFilledRows(rows);
 
-				while (cleared < rowCount) {
-					for (j = grid.height - 1; j >= 0; j -= 1) {
-						if (patterns.filledRow.test(rows[j])) {
-							grid.dropRow(j);
-							cleared += 1;
-							break;
-						}
-					}
+				/* Remove filled rows */
+				newRows = rows.filter(function (row) {
+					return row !== filledRow;
+				});
+
+				/* Pad top with new empty rows */
+				while (newRows.length < grid.height) {
+					newRows.unshift(emptyRow);
+				}
+
+				/* Convert new rows into flat array of actual numbers */
+				newRows = newRows.join('').split('').map(function (node) {
+					return +node;
+				});
+
+				/* Replace grid with new rows */
+				for (j = 0;j < grid.length;j += 1) {
+					grid[j] = newRows[j];
 				}
 
 				return rowCount;
