@@ -46,19 +46,20 @@
 
 
 	function update(time) {
-		var delta = time - lastUpdate;
-		lastUpdate = time;
-
-		game.update(delta);
-		game.render(context);
-
 		repaint(update);
+		var delta = time - lastUpdate;
+		if (delta >= 16) { // Cap at 60 FPS
+			lastUpdate = time;
+
+			game.update(delta);
+			game.render(context);
+		}
 	}
 
 	function init() {
 		context = createCanvas(width, height, document.body);
 		lastUpdate = Date.now();
-		repaint(update);
+		update(lastUpdate);
 	}
 
 	game = (function () {
