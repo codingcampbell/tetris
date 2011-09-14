@@ -90,7 +90,7 @@
 				for (x = 0; x < piece.squareSize; x += 1) {
 
 					/* Ignore white space */
-					if (+p[y * piece.squareSize + x] === 1) {
+					if (+p[y * piece.squareSize + x] !== 0) {
 						/* Location is invalid if it is outside the grid */
 						if ((piece.x + x >= grid.width) || (piece.x + x < 0)) {
 							return false;
@@ -101,7 +101,7 @@
 						}
 
 						/* Location is invalid if it is on top of an existing piece */
-						if (+grid[(piece.y + y) * grid.width + piece.x + x] === 1) {
+						if (+grid[(piece.y + y) * grid.width + piece.x + x] !== 0) {
 							return false;
 						}
 					}
@@ -120,7 +120,7 @@
 				for (x = 0; x < piece.squareSize; x += 1) {
 
 					/* Ignore white space */
-					if (+p[y * piece.squareSize + x] === 1) {
+					if (+p[y * piece.squareSize + x] !== 0) {
 						while (piece.x + x >= grid.width) {
 							piece.x -= 1;
 						}
@@ -148,7 +148,7 @@
 				for (x = 0; x < piece.squareSize; x += 1) {
 
 					/* Ignore white space */
-					if (+p[y * piece.squareSize + x] === 1) {
+					if (+p[y * piece.squareSize + x] !== 0) {
 						grid[(piece.y + y) * grid.width + piece.x + x] = 1;
 					}
 				}
@@ -228,7 +228,7 @@
 		];
 
 		grid = (function () {
-			var j, grid = [], patterns, emptyRow = '', filledRow = '';
+			var j, grid = [], patterns, emptyRow = '';
 			grid.width = 10;
 			grid.height = 20;
 
@@ -239,11 +239,11 @@
 
 			for (j = 0;j < grid.width;j += 1) {
 				emptyRow += '0';
-				filledRow += '1';
 			}
 
 			patterns = {
-				row: new RegExp('\\d{' + grid.width + '}', 'g')
+				row: new RegExp('\\d{' + grid.width + '}', 'g'),
+				filledRow: /^[1-9]+$/
 			};
 
 			grid.getRows = function () {
@@ -257,7 +257,7 @@
 
 				return (
 					rows.filter(function (row) {
-						return row === filledRow;
+						return patterns.filledRow.test(row);
 					}).length
 				);
 			};
@@ -269,7 +269,7 @@
 
 				/* Remove filled rows */
 				newRows = rows.filter(function (row) {
-					return row !== filledRow;
+					return !patterns.filledRow.test(row);
 				});
 
 				/* Pad top with new empty rows */
@@ -391,7 +391,7 @@
 				/* Grid content */
 				ctx.fillStyle = '#0f0';
 				grid.forEach(function (cell, index) {
-					if (cell === 1) {
+					if (cell !== 0) {
 						ctx.fillRect(
 							grid.x + (index % grid.width) * pieceSize,
 							grid.y + Math.floor(index / grid.width) * pieceSize,
