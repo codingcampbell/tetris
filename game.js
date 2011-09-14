@@ -31,7 +31,7 @@
 	}
 
 	function rand(min, max) {
-		return min + Math.floor(Math.random() * max - min);
+		return min + Math.floor(Math.random() * (max - min));
 	}
 
 	repaint = window.requestAnimationFrame ||
@@ -63,7 +63,7 @@
 	}
 
 	game = (function () {
-		var pieces, pieceSize = 20, grid, currentPiece, ghostPiece, timers, keys = [];
+		var pieces, pieceSize = 20, colors, grid, currentPiece, ghostPiece, timers, keys = [];
 
 		keys.SPACE = 32;
 		keys.LEFT_ARROW = 37;
@@ -149,7 +149,7 @@
 
 					/* Ignore white space */
 					if (+p[y * piece.squareSize + x] !== 0) {
-						grid[(piece.y + y) * grid.width + piece.x + x] = 1;
+						grid[(piece.y + y) * grid.width + piece.x + x] = piece.color;
 					}
 				}
 			}
@@ -176,6 +176,7 @@
 			copy.squareSize = piece.squareSize;
 			copy.x = piece.x;
 			copy.y = piece.y;
+			copy.color = piece.color;
 
 			return copy;
 		}
@@ -191,11 +192,15 @@
 		}
 
 		function getRandomPiece() {
-			var piece = pieces[Math.floor(Math.random() * pieces.length)];
+			var piece, pieceType;
+
+			pieceType = rand(0, pieces.length);
+			piece = pieces[pieceType];
 			piece.rotation = 0;
 			piece.squareSize = (piece[0].length === 9 && 3) || 4;
 			piece.x = Math.floor((grid.width / 2) - (piece.squareSize / 2));
 			piece.y = -1;
+			piece.color = pieceType + 1;
 
 			if (!fitPiece(piece)) {
 				/* TODO: game over */
@@ -203,6 +208,17 @@
 
 			return piece;
 		}
+
+		colors = [
+			'#fff', // white (never used, because index is 0)
+			'#d00', // red
+			'#0ff', // cyan
+			'#EBE705', // yellow
+			'#0f0', // green
+			'#00f', // blue
+			'#F21392', // pink
+			'#E654EB' // magenta
+		];
 
 		pieces = [
 			// Reverse L-piece
@@ -389,9 +405,9 @@
 				ctx.clearRect(0, 0, width, height);
 
 				/* Grid content */
-				ctx.fillStyle = '#0f0';
 				grid.forEach(function (cell, index) {
 					if (cell !== 0) {
+						ctx.fillStyle = colors[cell];
 						ctx.fillRect(
 							grid.x + (index % grid.width) * pieceSize,
 							grid.y + Math.floor(index / grid.width) * pieceSize,
@@ -403,7 +419,7 @@
 
 				/* Ghost piece */
 				if (ghostPiece) {
-					ctx.fillStyle = '#0ff';
+					ctx.fillStyle = '#eee';
 					renderPiece(
 						ctx,
 						ghostPiece,
@@ -413,7 +429,7 @@
 				}
 
 				/* Current piece */
-				ctx.fillStyle = '#f00';
+				ctx.fillStyle = colors[currentPiece.color];
 				renderPiece(
 					ctx,
 					currentPiece,
