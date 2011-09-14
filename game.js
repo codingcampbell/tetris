@@ -48,7 +48,7 @@
 	function update(time) {
 		repaint(update);
 		var delta = time - lastUpdate;
-		if (delta >= 16) { // Cap at 60 FPS
+		if (delta >= 16 || true) { // Cap at 60 FPS
 			lastUpdate = time;
 
 			game.update(delta);
@@ -63,7 +63,7 @@
 	}
 
 	game = (function () {
-		var pieces, pieceSize = 20, colors, grid, currentPiece, ghostPiece, timers, keys = [];
+		var pieces, pieceSize = 20, colors, gradients, grid, currentPiece, ghostPiece, timers, keys = [];
 
 		keys.SPACE = 32;
 		keys.LEFT_ARROW = 37;
@@ -71,13 +71,21 @@
 		keys.RIGHT_ARROW = 39;
 		keys.DOWN_ARROW = 40;
 
-		function renderPiece(ctx, piece, x, y) {
+		function renderPiece(ctx, piece, x, y, noBorder) {
 			var n, j; 
 
 			for (n = 0; n < piece.squareSize; n += 1) {
 				for (j = 0; j < piece.squareSize; j += 1) {
 					if (piece[piece.rotation][n * piece.squareSize + j] === '1') {
-						ctx.fillRect(x + j * pieceSize, y + n * pieceSize, pieceSize, pieceSize);
+						ctx.save();
+						ctx.translate(x + j * pieceSize, y + n * pieceSize);
+						ctx.fillRect(0, 0, pieceSize, pieceSize);
+						if (!noBorder) {
+							ctx.strokeStyle = darkenColor(colors[piece.color]);
+							ctx.strokeWidth = 2.0;
+							ctx.strokeRect(0, 0, pieceSize, pieceSize);
+						}
+						ctx.restore();
 					}
 				}
 			}
@@ -209,16 +217,23 @@
 			return piece;
 		}
 
-		colors = [
-			'#fff', // white (never used, because index is 0)
-			'#d00', // red
-			'#0ff', // cyan
-			'#EBE705', // yellow
-			'#0f0', // green
-			'#00f', // blue
-			'#F21392', // pink
-			'#E654EB' // magenta
-		];
+		function createGradients(ctx, colors) {
+			return colors.map(function (color) {
+				var gradient = ctx.createLinearGradient(0, 0, pieceSize, pieceSize);
+				gradient.addColorStop(0, '#fff');
+				gradient.addColorStop(1, color);
+
+				return gradient;
+			});
+		}
+
+		function darkenColor(color) {
+			return color.replace(/[\da-f]/g, function (x) {
+				return Math.max(0, parseInt(x, 16) - 7);
+			});
+		}
+
+		colors = ['#fff', '#f00', '#0c0', '#00f', '#dd0', '#0af', '#c0f', '#E69019'];
 
 		pieces = [
 			// Reverse L-piece
@@ -400,22 +415,13 @@
 			},
 
 			render: function (ctx) {
+				if (!gradients) {
+					gradients = createGradients(ctx, colors);
+				}
+
 				/* Clear screen */
 				ctx.clearStyle = '#fff';
 				ctx.clearRect(0, 0, width, height);
-
-				/* Grid content */
-				grid.forEach(function (cell, index) {
-					if (cell !== 0) {
-						ctx.fillStyle = colors[cell];
-						ctx.fillRect(
-							grid.x + (index % grid.width) * pieceSize,
-							grid.y + Math.floor(index / grid.width) * pieceSize,
-							pieceSize,
-							pieceSize
-						);
-					}
-				});
 
 				/* Ghost piece */
 				if (ghostPiece) {
@@ -424,12 +430,30 @@
 						ctx,
 						ghostPiece,
 						grid.x + ghostPiece.x * pieceSize,
-						grid.y + ghostPiece.y * pieceSize
+						grid.y + ghostPiece.y * pieceSize,
+						true
 					);
 				}
 
+				/* Grid content */
+				grid.forEach(function (cell, index) {
+					if (cell !== 0) {
+						ctx.fillStyle = gradients[cell];
+						ctx.save();
+						ctx.translate(
+							grid.x + (index % grid.width) * pieceSize,
+							grid.y + Math.floor(index / grid.width) * pieceSize
+						);
+						ctx.fillRect(0, 0, pieceSize, pieceSize);
+						ctx.strokeStyle = darkenColor(colors[cell]);
+						ctx.strokeWidth = 2.0;
+						ctx.strokeRect(0, 0, pieceSize, pieceSize);
+						ctx.restore();
+					}
+				});
+
 				/* Current piece */
-				ctx.fillStyle = colors[currentPiece.color];
+				ctx.fillStyle = gradients[currentPiece.color];
 				renderPiece(
 					ctx,
 					currentPiece,
