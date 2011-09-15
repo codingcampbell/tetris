@@ -48,7 +48,7 @@
 	function update(time) {
 		repaint(update);
 		var delta = time - lastUpdate;
-		if (delta >= 16 || true) { // Cap at 60 FPS
+		if (delta >= 16) { // Cap at 60 FPS
 			lastUpdate = time;
 
 			game.update(delta);
@@ -63,13 +63,15 @@
 	}
 
 	game = (function () {
-		var pieces, pieceSize = 20, colors, gradients, grid, currentPiece, ghostPiece, timers, keys = [];
+		var pieces, pieceSize = 20, colors, gradients, grid, currentPiece, ghostPiece, timers, keys;
 
-		keys.SPACE = 32;
-		keys.LEFT_ARROW = 37;
-		keys.UP_ARROW = 38;
-		keys.RIGHT_ARROW = 39;
-		keys.DOWN_ARROW = 40;
+		keys = {
+			spacebar: 32,
+			left: 37,
+			up: 38,
+			right: 39,
+			down: 40
+		};
 
 		function renderPiece(ctx, piece, x, y, noBorder) {
 			var n, j; 
@@ -360,35 +362,35 @@
 				while (timers.move >= 100) {
 					timers.move -= 100;
 					oldPiece = copyPiece(currentPiece);
-					if (keys[keys.LEFT_ARROW] > 0) {
+					if (keys[keys.left] > 0) {
 						/* Delay movement for one cycle */
-						if (keys[keys.LEFT_ARROW] === 1 || keys[keys.LEFT_ARROW] > 2) {
+						if (keys[keys.left] === 1 || keys[keys.left] > 2) {
 							currentPiece.x -= 1;
 						}
 
-						keys[keys.LEFT_ARROW] += 1;
+						keys[keys.left] += 1;
 					}
 
-					if (keys[keys.RIGHT_ARROW] > 0) {
+					if (keys[keys.right] > 0) {
 						/* Delay movement for one cycle */
-						if (keys[keys.RIGHT_ARROW] === 1 || keys[keys.RIGHT_ARROW] > 2) {
+						if (keys[keys.right] === 1 || keys[keys.right] > 2) {
 							currentPiece.x += 1;
 						}
 
-						keys[keys.RIGHT_ARROW] += 1;
+						keys[keys.right] += 1;
 					}
 
-					if (keys[keys.UP_ARROW] === 1) {
+					if (keys[keys.up] === 1) {
 						currentPiece.rotation = (currentPiece.rotation + 1) % 4;
-						keys[keys.UP_ARROW] = -1;
+						keys[keys.up] = -1;
 					}
 
-					if (keys[keys.DOWN_ARROW] === 1) {
+					if (keys[keys.down] === 1) {
 						timers.drop += 1000;
 					}
 					
-					if (keys[keys.SPACE] === 1) {
-						keys[keys.SPACE] = -1;
+					if (keys[keys.spacebar] === 1) {
+						keys[keys.spacebar] = -1;
 						placePiece(ghostPiece);
 						currentPiece = getRandomPiece();
 					}
