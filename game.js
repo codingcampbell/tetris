@@ -73,18 +73,24 @@
 			down: 40
 		};
 
+		function renderSquare(ctx, x, y, color) {
+			ctx.save();
+			ctx.translate(x, y);
+			ctx.fillRect(0, 0, pieceSize, pieceSize);
+			ctx.strokeStyle = darkenColor(color);
+			ctx.strokeRect(0, 0, pieceSize, pieceSize);
+			ctx.restore();
+		}
+
 		function renderPiece(ctx, piece, x, y) {
 			var n, j; 
+
+			ctx.fillStyle = gradients[piece.color];
 
 			for (n = 0; n < piece.squareSize; n += 1) {
 				for (j = 0; j < piece.squareSize; j += 1) {
 					if (piece[piece.rotation][n * piece.squareSize + j] === '1') {
-						ctx.save();
-						ctx.translate(x + j * pieceSize, y + n * pieceSize);
-						ctx.fillRect(0, 0, pieceSize, pieceSize);
-						ctx.strokeStyle = darkenColor(colors[piece.color]);
-						ctx.strokeRect(0, 0, pieceSize, pieceSize);
-						ctx.restore();
+						renderSquare(ctx, x + j * pieceSize, y + n * pieceSize, colors[piece.color]);
 					}
 				}
 			}
@@ -426,8 +432,6 @@
 
 				/* Ghost piece */
 				if (ghostPiece) {
-					//ctx.fillStyle = '#eee';
-					ctx.fillStyle = gradients[currentPiece.color];
 					ctx.globalAlpha = .25;
 					renderPiece(
 						ctx,
@@ -442,15 +446,12 @@
 				grid.forEach(function (cell, index) {
 					if (cell !== 0) {
 						ctx.fillStyle = gradients[cell];
-						ctx.save();
-						ctx.translate(
+						renderSquare(
+							ctx,
 							grid.x + (index % grid.width) * pieceSize,
-							grid.y + Math.floor(index / grid.width) * pieceSize
+							grid.y + Math.floor(index / grid.width) * pieceSize,
+							colors[cell]
 						);
-						ctx.fillRect(0, 0, pieceSize, pieceSize);
-						ctx.strokeStyle = darkenColor(colors[cell]);
-						ctx.strokeRect(0, 0, pieceSize, pieceSize);
-						ctx.restore();
 					}
 				});
 
