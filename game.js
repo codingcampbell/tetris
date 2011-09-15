@@ -63,7 +63,7 @@
 	}
 
 	game = (function () {
-		var pieces, pieceSize = 20, colors, gradients, grid, currentPiece, ghostPiece, timers, keys;
+		var pieces, pieceSize = 26, colors, gradients, grid, currentPiece, ghostPiece, timers, keys;
 
 		keys = {
 			spacebar: 32,
@@ -73,7 +73,7 @@
 			down: 40
 		};
 
-		function renderPiece(ctx, piece, x, y, noBorder) {
+		function renderPiece(ctx, piece, x, y) {
 			var n, j; 
 
 			for (n = 0; n < piece.squareSize; n += 1) {
@@ -82,11 +82,8 @@
 						ctx.save();
 						ctx.translate(x + j * pieceSize, y + n * pieceSize);
 						ctx.fillRect(0, 0, pieceSize, pieceSize);
-						if (!noBorder) {
-							ctx.strokeStyle = darkenColor(colors[piece.color]);
-							ctx.strokeWidth = 2.0;
-							ctx.strokeRect(0, 0, pieceSize, pieceSize);
-						}
+						ctx.strokeStyle = darkenColor(colors[piece.color]);
+						ctx.strokeRect(0, 0, pieceSize, pieceSize);
 						ctx.restore();
 					}
 				}
@@ -421,20 +418,24 @@
 					gradients = createGradients(ctx, colors);
 				}
 
+				ctx.lineWidth = 1.0;
+
 				/* Clear screen */
 				ctx.clearStyle = '#fff';
 				ctx.clearRect(0, 0, width, height);
 
 				/* Ghost piece */
 				if (ghostPiece) {
-					ctx.fillStyle = '#eee';
+					//ctx.fillStyle = '#eee';
+					ctx.fillStyle = gradients[currentPiece.color];
+					ctx.globalAlpha = .25;
 					renderPiece(
 						ctx,
 						ghostPiece,
 						grid.x + ghostPiece.x * pieceSize,
-						grid.y + ghostPiece.y * pieceSize,
-						true
+						grid.y + ghostPiece.y * pieceSize
 					);
+					ctx.globalAlpha = 1;
 				}
 
 				/* Grid content */
@@ -448,7 +449,6 @@
 						);
 						ctx.fillRect(0, 0, pieceSize, pieceSize);
 						ctx.strokeStyle = darkenColor(colors[cell]);
-						ctx.strokeWidth = 2.0;
 						ctx.strokeRect(0, 0, pieceSize, pieceSize);
 						ctx.restore();
 					}
@@ -464,7 +464,8 @@
 				);
 
 				/* Grid outline */
-				ctx.strokeStyle = '#00f';
+				ctx.strokeStyle = '#aaa';
+				ctx.lineWidth = 2.0;
 				ctx.strokeRect(grid.x, grid.y, grid.width * pieceSize, grid.height * pieceSize);
 			}
 		});
