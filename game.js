@@ -283,7 +283,6 @@
 				grid.push(0);
 			}
 
-
 			for (j = 0;j < grid.width;j += 1) {
 				emptyRow += '0';
 			}
@@ -353,9 +352,16 @@
 
 		return ({
 			/* Return true if game should capture the provided key code */
-			captureKey: function (code) {
-				return (code >= 37 && code <= 40) || code === 32;
-			},
+			captureKey: (function () {
+				var codes = {};
+				Object.keys(keys).forEach(function (key) {
+					codes[keys[key]] = true;
+				});
+
+				return function (code) {
+					return !!codes[code];
+				};
+			}()),
 
 			keyPressed: function (code) {
 				/* -1 means user must release key before pressing it */
