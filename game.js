@@ -34,6 +34,10 @@
 		return min + Math.floor(Math.random() * (max - min));
 	}
 
+	Math.toRadians = Math.toRadians || function (degrees) {
+		return degrees * (Math.PI / 180);
+	};
+
 	repaint = window.requestAnimationFrame ||
 		window.webkitRequestAnimationFrame ||
 		window.mozRequestAnimationFrame ||
@@ -73,9 +77,16 @@
 			down: 40
 		};
 
-		function renderSquare(ctx, x, y, color) {
+		function renderSquare(ctx, color, x, y, rotation) {
 			ctx.save();
 			ctx.translate(x, y);
+
+			if (rotation) {
+				ctx.translate(pieceSize / 2, pieceSize / 2);
+				ctx.rotate(Math.toRadians(rotation));
+				ctx.translate(pieceSize / -2, pieceSize / -2);
+			}
+
 			ctx.fillRect(0, 0, pieceSize, pieceSize);
 			ctx.strokeStyle = darkenColor(color);
 			ctx.strokeRect(0, 0, pieceSize, pieceSize);
@@ -90,7 +101,7 @@
 			for (n = 0; n < piece.squareSize; n += 1) {
 				for (j = 0; j < piece.squareSize; j += 1) {
 					if (piece[piece.rotation][n * piece.squareSize + j] === '1') {
-						renderSquare(ctx, x + j * pieceSize, y + n * pieceSize, colors[piece.color]);
+						renderSquare(ctx, colors[piece.color], x + j * pieceSize, y + n * pieceSize);
 					}
 				}
 			}
@@ -448,9 +459,9 @@
 						ctx.fillStyle = gradients[cell];
 						renderSquare(
 							ctx,
+							colors[cell],
 							grid.x + (index % grid.width) * pieceSize,
-							grid.y + Math.floor(index / grid.width) * pieceSize,
-							colors[cell]
+							grid.y + Math.floor(index / grid.width) * pieceSize
 						);
 					}
 				});
