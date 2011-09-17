@@ -52,7 +52,7 @@
 	function update(time) {
 		repaint(update);
 		var delta = time - lastUpdate;
-		if (delta >= 16) { // Cap at 60 FPS
+		if (delta >= 16 || true) { // Cap at 60 FPS
 			lastUpdate = time;
 
 			game.update(delta);
@@ -532,6 +532,8 @@
 
 				/* Render next piece */
 				renderPieceBox(ctx, pieces.next, width - 130, 1, 125, 125);
+
+				/* Render hold piece */
 				renderPieceBox(ctx, pieces.hold, width - 130, 135, 125, 125);
 			}
 		});
