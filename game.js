@@ -67,7 +67,7 @@
 	}
 
 	game = (function () {
-		var pieces, pieceSize = 26, colors, gradients, grid, pieces, timers, keys;
+		var pieces, pieceSize = 26, colors, gradients, grid, timers, keys;
 
 		keys = {
 			spacebar: 32,
@@ -77,6 +77,13 @@
 			down: 40,
 			c: 67
 		};
+
+		function darkenColor(color) {
+			return color.replace(/[\da-f]/g, function (x) {
+				return Math.max(0, parseInt(x, 16) - 7);
+			});
+		}
+
 
 		function renderSquare(ctx, color, x, y, rotation) {
 			ctx.save();
@@ -95,7 +102,7 @@
 		}
 
 		function renderPiece(ctx, piece, x, y) {
-			var n, j; 
+			var n, j;
 
 			ctx.fillStyle = gradients[piece.color];
 			ctx.lineWidth = 1.0;
@@ -143,7 +150,7 @@
 					}
 				}
 			}
-			
+
 			return true;
 		}
 
@@ -265,12 +272,6 @@
 			});
 		}
 
-		function darkenColor(color) {
-			return color.replace(/[\da-f]/g, function (x) {
-				return Math.max(0, parseInt(x, 16) - 7);
-			});
-		}
-
 		colors = ['#fff', '#f00', '#0c0', '#00f', '#dd0', '#0af', '#c0f', '#E69019'];
 
 		pieces = [
@@ -305,7 +306,7 @@
 				grid.push(0);
 			}
 
-			for (j = 0;j < grid.width;j += 1) {
+			for (j = 0; j < grid.width; j += 1) {
 				emptyRow += '0';
 			}
 
@@ -351,7 +352,7 @@
 				});
 
 				/* Replace grid with new rows */
-				for (j = 0;j < grid.length;j += 1) {
+				for (j = 0; j < grid.length; j += 1) {
 					grid[j] = newRows[j];
 				}
 
@@ -361,7 +362,7 @@
 			grid.render = function (ctx) {
 				/* Ghost piece */
 				if (pieces.ghost) {
-					ctx.globalAlpha = .25;
+					ctx.globalAlpha = 0.25;
 					renderPiece(
 						ctx,
 						pieces.ghost,
@@ -475,7 +476,7 @@
 					if (keys[keys.down] === 1) {
 						timers.drop += 1000;
 					}
-					
+
 					if (keys[keys.spacebar] === 1) {
 						keys[keys.spacebar] = -1;
 						placePiece(pieces.ghost);
