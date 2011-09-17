@@ -52,7 +52,7 @@
 	function update(time) {
 		repaint(update);
 		var delta = time - lastUpdate;
-		if (delta >= 16 || true) { // Cap at 60 FPS
+		if (delta >= 16) { // Cap at 60 FPS
 			lastUpdate = time;
 
 			game.update(delta);
@@ -433,6 +433,8 @@
 				if (keys[code] !== -1) {
 					keys[code] = 1;
 				}
+
+				update(Date.now());
 			},
 
 			keyReleased: function (code) {
