@@ -67,7 +67,7 @@
 	}
 
 	game = (function () {
-		var pieces, pieceSize = 26, colors, gradients, grid, currentPiece, ghostPiece, timers, keys;
+		var pieces, pieceSize = 26, colors, gradients, grid, pieces, timers, keys;
 
 		keys = {
 			spacebar: 32,
@@ -225,6 +225,11 @@
 			piece.x = Math.floor((grid.width / 2) - (piece.squareSize / 2));
 			piece.y = -1;
 			piece.color = pieceType + 1;
+			piece.width = 3;
+
+			if (pieceType === 5) {
+				piece.width = 2; // block piece
+			}
 
 			if (!fitPiece(piece)) {
 				/* TODO: game over */
@@ -338,13 +343,13 @@
 
 			grid.render = function (ctx) {
 				/* Ghost piece */
-				if (ghostPiece) {
+				if (pieces.ghost) {
 					ctx.globalAlpha = .25;
 					renderPiece(
 						ctx,
-						ghostPiece,
-						grid.x + ghostPiece.x * pieceSize,
-						grid.y + ghostPiece.y * pieceSize
+						pieces.ghost,
+						grid.x + pieces.ghost.x * pieceSize,
+						grid.y + pieces.ghost.y * pieceSize
 					);
 					ctx.globalAlpha = 1;
 				}
@@ -363,12 +368,12 @@
 				});
 
 				/* Current piece */
-				ctx.fillStyle = gradients[currentPiece.color];
+				ctx.fillStyle = gradients[pieces.current.color];
 				renderPiece(
 					ctx,
-					currentPiece,
-					grid.x + currentPiece.x * pieceSize,
-					grid.y + currentPiece.y * pieceSize
+					pieces.current,
+					grid.x + pieces.current.x * pieceSize,
+					grid.y + pieces.current.y * pieceSize
 				);
 
 				/* Grid outline */
@@ -380,11 +385,12 @@
 			return grid;
 		}());
 
-		grid.x = (width / 2) - (grid.width * pieceSize / 2);
-		grid.y = 50;
+		grid.x = 1;
+		grid.y = 1;
 
-		currentPiece = getRandomPiece();
-		ghostPiece = getGhostPiece(currentPiece);
+		pieces.current = getRandomPiece();
+		pieces.next = getRandomPiece();
+		pieces.ghost = getGhostPiece(pieces.current);
 
 		timers = {
 			move: 0,
@@ -422,11 +428,11 @@
 
 				while (timers.move >= 100) {
 					timers.move -= 100;
-					oldPiece = copyPiece(currentPiece);
+					oldPiece = copyPiece(pieces.current);
 					if (keys[keys.left] > 0) {
 						/* Delay movement for one cycle */
 						if (keys[keys.left] === 1 || keys[keys.left] > 2) {
-							currentPiece.x -= 1;
+							pieces.current.x -= 1;
 						}
 
 						keys[keys.left] += 1;
@@ -435,14 +441,14 @@
 					if (keys[keys.right] > 0) {
 						/* Delay movement for one cycle */
 						if (keys[keys.right] === 1 || keys[keys.right] > 2) {
-							currentPiece.x += 1;
+							pieces.current.x += 1;
 						}
 
 						keys[keys.right] += 1;
 					}
 
 					if (keys[keys.up] === 1) {
-						currentPiece.rotation = (currentPiece.rotation + 1) % 4;
+						pieces.current.rotation = (pieces.current.rotation + 1) % 4;
 						keys[keys.up] = -1;
 					}
 
@@ -452,27 +458,29 @@
 					
 					if (keys[keys.spacebar] === 1) {
 						keys[keys.spacebar] = -1;
-						placePiece(ghostPiece);
-						currentPiece = getRandomPiece();
+						placePiece(pieces.ghost);
+						pieces.current = copyPiece(pieces.next);
+						pieces.next = getRandomPiece();
 					}
 
-					if (fitPiece(currentPiece)) {
-						ghostPiece = getGhostPiece(currentPiece);
+					if (fitPiece(pieces.current)) {
+						pieces.ghost = getGhostPiece(pieces.current);
 					} else {
 						/* Revert invalid movement */
-						currentPiece = copyPiece(oldPiece);
+						pieces.current = copyPiece(oldPiece);
 					}
 				}
 
 				while (timers.drop >= 1000) {
 					timers.drop -= 1000;
-					currentPiece.y += 1;
-					if (!validatePieceLocation(currentPiece)) {
+					pieces.current.y += 1;
+					if (!validatePieceLocation(pieces.current)) {
 						timers.drop = 0;
-						currentPiece.y -= 1;
-						placePiece(currentPiece);
-						currentPiece = getRandomPiece();
-						ghostPiece = getGhostPiece(currentPiece);
+						pieces.current.y -= 1;
+						placePiece(pieces.current);
+						pieces.current = copyPiece(pieces.next);
+						pieces.next = getRandomPiece();
+						pieces.ghost = getGhostPiece(pieces.current);
 					}
 				}
 			},
@@ -490,6 +498,10 @@
 
 				/* Render grid */
 				grid.render(ctx);
+
+				/* Render next piece */
+				renderPiece(ctx, pieces.next, (width - 130) + (63 - Math.floor(pieces.next.width * pieceSize / 2)), 10);
+				ctx.strokeRect(width - 130, 1, 125, 125);
 			}
 		});
 	}());
