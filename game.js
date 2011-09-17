@@ -97,6 +97,7 @@
 			var n, j; 
 
 			ctx.fillStyle = gradients[piece.color];
+			ctx.lineWidth = 1.0;
 
 			for (n = 0; n < piece.squareSize; n += 1) {
 				for (j = 0; j < piece.squareSize; j += 1) {
@@ -105,6 +106,13 @@
 					}
 				}
 			}
+		}
+
+		/* Render a window that displays one piece */
+		function renderPieceBox(ctx, piece, x, y, width, height) {
+			renderPiece(ctx, piece, x + Math.floor((width / 2) - (piece.width * pieceSize / 2)), y + 10);
+			ctx.lineWidth = 2.0;
+			ctx.strokeRect(x, y, width, height);
 		}
 
 		function validatePieceLocation(piece) {
@@ -226,7 +234,6 @@
 			piece.y = -1;
 			piece.color = pieceType + 1;
 			piece.width = 3;
-
 			if (pieceType === 5) {
 				piece.width = 2; // block piece
 			}
@@ -490,8 +497,6 @@
 					gradients = createGradients(ctx, colors);
 				}
 
-				ctx.lineWidth = 1.0;
-
 				/* Clear screen */
 				ctx.clearStyle = '#fff';
 				ctx.clearRect(0, 0, width, height);
@@ -500,8 +505,7 @@
 				grid.render(ctx);
 
 				/* Render next piece */
-				renderPiece(ctx, pieces.next, (width - 130) + (63 - Math.floor(pieces.next.width * pieceSize / 2)), 10);
-				ctx.strokeRect(width - 130, 1, 125, 125);
+				renderPieceBox(ctx, pieces.next, width - 130, 1, 125, 125);
 			}
 		});
 	}());
