@@ -336,6 +336,47 @@
 				return rowCount;
 			};
 
+			grid.render = function (ctx) {
+				/* Ghost piece */
+				if (ghostPiece) {
+					ctx.globalAlpha = .25;
+					renderPiece(
+						ctx,
+						ghostPiece,
+						grid.x + ghostPiece.x * pieceSize,
+						grid.y + ghostPiece.y * pieceSize
+					);
+					ctx.globalAlpha = 1;
+				}
+
+				/* Grid content */
+				grid.forEach(function (cell, index) {
+					if (cell !== 0) {
+						ctx.fillStyle = gradients[cell];
+						renderSquare(
+							ctx,
+							colors[cell],
+							grid.x + (index % grid.width) * pieceSize,
+							grid.y + Math.floor(index / grid.width) * pieceSize
+						);
+					}
+				});
+
+				/* Current piece */
+				ctx.fillStyle = gradients[currentPiece.color];
+				renderPiece(
+					ctx,
+					currentPiece,
+					grid.x + currentPiece.x * pieceSize,
+					grid.y + currentPiece.y * pieceSize
+				);
+
+				/* Grid outline */
+				ctx.strokeStyle = '#aaa';
+				ctx.lineWidth = 2.0;
+				ctx.strokeRect(grid.x, grid.y, grid.width * pieceSize, grid.height * pieceSize);
+			};
+
 			return grid;
 		}());
 
@@ -447,44 +488,8 @@
 				ctx.clearStyle = '#fff';
 				ctx.clearRect(0, 0, width, height);
 
-				/* Ghost piece */
-				if (ghostPiece) {
-					ctx.globalAlpha = .25;
-					renderPiece(
-						ctx,
-						ghostPiece,
-						grid.x + ghostPiece.x * pieceSize,
-						grid.y + ghostPiece.y * pieceSize
-					);
-					ctx.globalAlpha = 1;
-				}
-
-				/* Grid content */
-				grid.forEach(function (cell, index) {
-					if (cell !== 0) {
-						ctx.fillStyle = gradients[cell];
-						renderSquare(
-							ctx,
-							colors[cell],
-							grid.x + (index % grid.width) * pieceSize,
-							grid.y + Math.floor(index / grid.width) * pieceSize
-						);
-					}
-				});
-
-				/* Current piece */
-				ctx.fillStyle = gradients[currentPiece.color];
-				renderPiece(
-					ctx,
-					currentPiece,
-					grid.x + currentPiece.x * pieceSize,
-					grid.y + currentPiece.y * pieceSize
-				);
-
-				/* Grid outline */
-				ctx.strokeStyle = '#aaa';
-				ctx.lineWidth = 2.0;
-				ctx.strokeRect(grid.x, grid.y, grid.width * pieceSize, grid.height * pieceSize);
+				/* Render grid */
+				grid.render(ctx);
 			}
 		});
 	}());
