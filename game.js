@@ -74,7 +74,8 @@
 			left: 37,
 			up: 38,
 			right: 39,
-			down: 40
+			down: 40,
+			c: 67
 		};
 
 		function renderSquare(ctx, color, x, y, rotation) {
@@ -110,7 +111,10 @@
 
 		/* Render a window that displays one piece */
 		function renderPieceBox(ctx, piece, x, y, width, height) {
-			renderPiece(ctx, piece, x + Math.floor((width / 2) - (piece.width * pieceSize / 2)), y + 10);
+			if (piece) {
+				renderPiece(ctx, piece, x + Math.floor((width / 2) - (piece.width * pieceSize / 2)), y + 10);
+			}
+
 			ctx.lineWidth = 2.0;
 			ctx.strokeRect(x, y, width, height);
 		}
@@ -209,6 +213,8 @@
 			copy.x = piece.x;
 			copy.y = piece.y;
 			copy.color = piece.color;
+			copy.width = piece.width;
+			copy.type = piece.type;
 
 			return copy;
 		}
@@ -223,6 +229,11 @@
 			return null;
 		}
 
+		function initPiecePosition(piece) {
+			piece.x = Math.floor((grid.width / 2) - (piece.squareSize / 2));
+			piece.y = -1;
+		}
+
 		function getRandomPiece() {
 			var piece, pieceType;
 
@@ -230,8 +241,7 @@
 			piece = pieces[pieceType];
 			piece.rotation = 0;
 			piece.squareSize = (piece[0].length === 9 && 3) || 4;
-			piece.x = Math.floor((grid.width / 2) - (piece.squareSize / 2));
-			piece.y = -1;
+			initPiecePosition(piece);
 			piece.color = pieceType + 1;
 			piece.width = 3;
 			if (pieceType === 5) {
@@ -398,6 +408,7 @@
 		pieces.current = getRandomPiece();
 		pieces.next = getRandomPiece();
 		pieces.ghost = getGhostPiece(pieces.current);
+		pieces.hold = null;
 
 		timers = {
 			move: 0,
@@ -476,6 +487,21 @@
 						/* Revert invalid movement */
 						pieces.current = copyPiece(oldPiece);
 					}
+
+					if (keys[keys.c] === 1) {
+						keys[keys.c] = -1;
+						if (pieces.hold !== null) {
+							oldPiece = copyPiece(pieces.current);
+							pieces.current = copyPiece(pieces.hold);
+							pieces.hold = oldPiece;
+						} else {
+							pieces.hold = copyPiece(pieces.current);
+							pieces.current = copyPiece(pieces.next);
+							pieces.next = getRandomPiece();
+						}
+
+						initPiecePosition(pieces.current);
+					}
 				}
 
 				while (timers.drop >= 1000) {
@@ -506,6 +532,7 @@
 
 				/* Render next piece */
 				renderPieceBox(ctx, pieces.next, width - 130, 1, 125, 125);
+				renderPieceBox(ctx, pieces.hold, width - 130, 135, 125, 125);
 			}
 		});
 	}());
