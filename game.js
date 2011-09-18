@@ -239,6 +239,9 @@
 		function initPiecePosition(piece) {
 			piece.x = Math.floor((grid.width / 2) - (piece.squareSize / 2));
 			piece.y = -1;
+			piece.rotation = 0;
+
+			return piece;
 		}
 
 		function getRandomPiece() {
@@ -246,7 +249,6 @@
 
 			pieceType = rand(0, pieces.length);
 			piece = pieces[pieceType];
-			piece.rotation = 0;
 			piece.squareSize = (piece[0].length === 9 && 3) || 4;
 			initPiecePosition(piece);
 			piece.color = pieceType + 1;
@@ -496,14 +498,12 @@
 						if (pieces.hold !== null) {
 							oldPiece = copyPiece(pieces.current);
 							pieces.current = copyPiece(pieces.hold);
-							pieces.hold = oldPiece;
+							pieces.hold = initPiecePosition(oldPiece);
 						} else {
-							pieces.hold = copyPiece(pieces.current);
+							pieces.hold = initPiecePosition(copyPiece(pieces.current));
 							pieces.current = copyPiece(pieces.next);
 							pieces.next = getRandomPiece();
 						}
-
-						initPiecePosition(pieces.current);
 					}
 				}
 
