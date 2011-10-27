@@ -1,5 +1,4 @@
 (function (window, document) {
-	"use strict";
 	var width = 400, height = 600, repaint, context, lastUpdate, game;
 
 	function createCanvas(width, height, node) {
