@@ -1,4 +1,4 @@
-Because gamedev enthusiast everyone should write tetris at least once!
+Because every gamedev enthusiast should write tetris at least once!
 
 To be honest this was just an excuse to refamiliarize myself with the canvas drawing API.
 
