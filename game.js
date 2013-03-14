@@ -50,6 +50,11 @@
 
 	function update(time, force) {
 		repaint(update);
+
+		if (time < 0) {
+			lastUpdate = time;
+		}
+
 		var delta = time - lastUpdate;
 		if (delta >= 16 || force) { // Cap at 60 FPS
 			lastUpdate = time;
@@ -61,7 +66,7 @@
 
 	function init() {
 		context = createCanvas(width, height, document.body);
-		lastUpdate = Date.now();
+		lastUpdate = -1;
 		update(lastUpdate);
 	}
 
@@ -436,8 +441,6 @@
 				if (keys[code] !== -1) {
 					keys[code] = 1;
 				}
-
-				update(Date.now(), true);
 			},
 
 			keyReleased: function (code) {
