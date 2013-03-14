@@ -51,8 +51,9 @@
 	function update(time, force) {
 		repaint(update);
 
-		if (time < 0) {
+		if (lastUpdate < 0) {
 			lastUpdate = time;
+			return;
 		}
 
 		var delta = time - lastUpdate;
@@ -67,7 +68,7 @@
 	function init() {
 		context = createCanvas(width, height, document.body);
 		lastUpdate = -1;
-		update(lastUpdate);
+		repaint(update);
 	}
 
 	game = (function () {
